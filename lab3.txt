@@ -1,0 +1,23 @@
+#zadanie 4
+create table sprint(id_sprintu INT primary key AUTO_INCREMENT, numer_sprintu INT, data_rozpoczecia DATE, data_zakonczenia DATE);
+alter table sprint add column sprint INT;
+alter table zadanie add foreign key (sprint) references sprint(id_sprintu) ON DELETE SET NULL;
+INSERT INTO sprint (numer_sprintu, data_rozpoczecia, data_zakonczenia)
+VALUES (1, '2020-11-10', '2020-11-12');
+INSERT INTO zadanie VALUES(default, 'Wake up', 'niski', 'Job', 3, 1);
+INSERT INTO zadanie VALEUS(default, 'Im here?', 'wysoki', 'Idk', 2, 1);
+
+
+#zadanie 5
+create table status(id_status INT primary key auto_increment, nazwa_statusu varchar(20));
+INSERT INTO status values(default , 'Aktywny');
+INSERT INTO status values(default , 'Neutralny');
+INSERT INTO status values(default , 'Pasywny');
+
+create table zadanie_has_status (id_zdarzenia INT primary key auto_increment, id_zadania INT, id_statusu INT, data_zdarzenia DATETIME DEFAULT CURRENT_TIMESTAMP);
+alter table zadanie_has_status ADD FOREIGN KEY (id_zadania) REFERENCES zadanie(id_zadania);
+alter table zadanie_has_status ADD FOREIGN KEY (id_statusu) REFERENCES status(id_statusu);
+
+INSERT INTO zadanie_has_status (id_zadania, id_statusu) VALUES (1, 1);
+INSERT INTO zadanie_has_status (id_zadania, id_statusu) VALUES (2, 2);
+INSERT INTO zadanie_has_status (id_zadania, id_statusu) VALUES (3, 3);
