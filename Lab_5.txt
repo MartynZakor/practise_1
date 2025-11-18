@@ -1,0 +1,42 @@
+#dane bez klucz glownego
+CREATE TABLE CLIENT AS SELECT * FROM company_2025.CLIENT;
+
+#Klucze glowne ale bez danych
+create table CLIENT LIKE company_2025.CLIENT;
+
+insert into CLIENT SELECT * FROM company_2025.CLIENT;
+
+#zadanie 1
+CREATE TABLE CLIENT AS SELECT * FROM company_2025.CLIENT;
+CREATE TABLE `ORDER` AS select * FROM company_2025.ORDER;
+CREATE table EMPLOYEE AS select * FROM company_2025.CLIENT;
+INSERT into `ORDER` SELECT * from company_2025.ORDER;
+INSERT INTO `ORDER` SELECT * from company_2025.ORDER where ORDER_STATUS = 5;
+select * from `ORDER`;
+SELECT ORDER_ID, ORDER_STATUS from `ORDER` WHERE CLIENT_ID in (1,3,5);
+
+#zadanie 2
+SELECT * from company_2025.EMPLOYEE;
+SELECT * FROM company_2025.EMPLOYEE WHERE FIRST_NAME = 'Agnieszka' AND pensja = 3900; 
+SELECT * FROM company_2025.EMPLOYEE WHERE pensja between 5000 AND 7000;
+select * from CLIENT;
+SELECT * from CLIENT where SHORT_NAME LIKE '%eco%' and IS_COMPANY = 1;
+
+#zadanie 3
+SELECT * FROM `ORDER`;
+SELECT * FROM `ORDER` where MONTH (ORDER_DATE) in (6,7);
+SELECT * FROM CLIENT WHERE TAX_IDENTIFIER IS not null ORDER BY SHORT_NAME;
+SELECT * FROM company_2025.EMPLOYEE order by BIRTH_DATE limit 5;
+
+#ZAdanie 4
+SELECT distinct FIRST_NAME from company_2025.EMPLOYEE ;
+SELECT * from company_2025.EMPLOYEE ;
+SELECT concat(FIRST_NAME, ' - ', LAST_NAME) AS FULLNAME FROM company_2025.EMPLOYEE WHERE LAST_NAME LIKE 'Ko%';
+SELECT concat(LAST_NAME, ' ', pensja) AS 'NAME AND PENSJA'FROM company_2025.EMPLOYEE where year(DATE_OF_EMPLOYMENT) between 2010 and 2014;
+
+
+#Zadanie 5
+SELECT concat(pensja ,' ', (pensja *0.75) , ' ',(pensja * 0.25)) AS 'baze_inf' FROM company_2025.EMPLOYEE ;
+SELECT * from company_2025.CLIENT WHERE TAX_IDENTIFIER is NULL;
+SELECT * FROM company_2025.CLIENT WHERE SHORT_NAME like 'K%' or SHORT_NAME like '%ski' ORDER BY SHORT_NAME desc;
+
