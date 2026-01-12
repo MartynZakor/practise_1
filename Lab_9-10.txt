@@ -1,0 +1,65 @@
+select e.EMPLOYEE_NAME, e.FIRST_NAME, e.LAST_NAME, e.pensja, row_number() over (ORDER BY e.pensja desc) from EMPLOYEE e ;
+select e.EMPLOYEE_NAME, e.FIRST_NAME, e.LAST_NAME, e.pensja, row_number() over (partition by e.FIRST_NAME ORDER BY e.pensja desc) from EMPLOYEE e ;
+
+select  sum(pensja) over() from EMPLOYEE; 	
+
+select e.LAST_NAME, p.PRODUCT_NAME, op.AMOUNT, op.SELL_PRICE , sum(op.AMOUNT * op.SELL_PRICE) OVER (partition by e.EMPLOYEE_NAME) as suma_sprzedarzy, rank() over() from 
+EMPLOYEE e inner join `ORDER` o on e.EMPLOYEE_NAME = o.EMPLOYEE_ID join ORDER_POSITION op on o.ORDER_ID = op.ORDER_ID join PRODUCT p on p.PRODUCT_ID=op.PRODUCT_ID; 
+
+select e.LAST_NAME, p.PRODUCT_NAME, op.SELL_PRICE, count(*) over (partition by op.PRODUCT_ID) as liczba_transakcji, sum(op.AMOUNT * op.SELL_PRICE) over (partition by o.ORDER_DATE) as suma_z_dnia, 
+lag(op.SELL_PRICE) over(partition by op.PRODUCT_ID) as poprzednia, lead(op.SELL_PRICE) over(partition by op.PRODUCT_ID)
+from EMPLOYEE e join `ORDER` o on e.EMPLOYEE_NAME = o.EMPLOYEE_ID join ORDER_POSITION op on o.ORDER_ID = op.ORDER_ID join PRODUCT p on p.PRODUCT_ID=op.PRODUCT_ID; 
+
+
+SELECT p.PRODUCT_NAME , p.PURCHASE_PRICE, SUM(op.SELL_PRICE * op.AMOUNT) OVER(PARTITION BY MONTH(o.ORDER_DATE)),
+SUM(op.SELL_PRICE * op.AMOUNT) OVER(PARTITION BY MONTH(o.ORDER_DATE) ORDER BY o.ORDER_DATE) AS SUMA_ROSNACA
+FROM PRODUCT p join `ORDER_POSITION` op  on p.PRODUCT_ID=op.PRODUCT_ID join `ORDER` o on  op.ORDER_ID=o.ORDER_ID ORDER BY o.ORDER_DATE;
+
+
+create table ORDER_LOGS (ORDER_NUMBER varchar(255), CHANGE_DATE datetime, NEW_STATUS_NAME varchar(255));
+
+DELIMITER //
+create trigger order_after_update AFTER UPDATE on `ORDER` FOR EACH ROW 
+BEGIN
+	INSERT INTO ORDER_LOGS(ORDER_NUMBER, CHANGE_DATE, NEW_STATUS_NAME)  
+    SELECT NEW.ORDER_NUMBER, now(), STATUS_NAME FROM `ORDER_STATUS` WHERE STATUS_ID = NEW.ORDER_STATUS;
+END // 
+DELIMITER ;
+
+SET SQL_SAFE_UPDATES = 1;
+UPDATE `ORDER` SET ORDER_STATUS = 6 WHERE ORDER_ID = 8;
+
+SELECT * FROM INVENTORY;
+DELIMITER //
+CREATE TRIGGER check_quantity before insert on `ORDER`  for each row begin
+	declare stock INT;
+    select @amount := AMOUNT from INVENTORY where PRODUCT_ID = NEW.PRODUCT_ID;
+
+    SELECT AMOUNT INTO stock  from INVENTORY WHERE PRODUCT_ID = NEW.PRODUCT_ID;
+	if stock < NEW.AMOUNT then 
+		signal sqlstate '45000'
+		set message_text = 'NOT ENOUGHT ITEMS';
+    end if;
+ END //
+ DELIMITER ;
+
+SELECT * FROM PRODUCT;
+DELIMITER //
+CREATE PROCEDURE product_find_by_phrase (IN nazwa varchar(255)) 
+begin 
+	SELECT * FROM PRODUCT WHERE PRODUCT_NAME LIKE concat(nazwa, '%');
+end //
+DELIMITER ;
+
+call product_find_by_phrase('Lap');
+
+DROP FUNCTION IF EXISTS income_for_month ;
+DELIMITER //
+CREATE function income_for_month(n_YEAR INT, n_MONTH INT) returns decimal(10,2)
+begin
+	DECLARE ans decimal(10,2);
+	SELECT COALESCE(SUM(SELL_PRICE * AMOUNT), 0) INTO ans FROM `ORDER` o join ORDER_POSITION op on o.ORDER_ID=op.ORDER_ID WHERE ORDER_STATUS = 10 AND YEAR(o.ORDER_DATE) = n_YEAR 
+      AND MONTH(o.ORDER_DATE) = n_MONTH;
+    RETURN ans;
+END //
+DELIMITER ;
