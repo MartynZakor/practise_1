@@ -1,0 +1,50 @@
+CREATE TABLE student(id_studenta INT primary key auto_increment, imie VARCHAR(100) NOT NULL, nazwisko varchar(100) NOT NULL, rok_studiow INT unsigned, data_urodzenia date );
+create TABLE kierunek (id_kierunku INT unsigned primary key auto_increment, nazwa_kierunku varchar(200) not null);
+create table student_na_kierunku (student INT , kierunek INT unsigned , PRIMARY KEY (student, kierunek));
+alter table student_na_kierunku add foreign key(student) references student(id_studenta);
+alter table student_na_kierunku add foreign key(kierunek) references kierunek(id_kierunku);
+create table przedmiot (id_przedmiotu int primary key auto_increment, nazwa_przedmiotu varchar(200) not null, opis text);
+create table kierunek_has_przedmioty (kierunek int unsigned not null, przedmiot int not null, obowiazkowy boolean default 1, primary key(kierunek, przedmiot),
+foreign key (kierunek) references kierunek(id_kierunku), foreign key (przedmiot) references przedmiot(id_przedmiotu));
+
+insert into student values(default, 'Mart', 'Zak', 2000, now());
+insert into student values(default, 'Ola', 'Zak', 2001, now());
+insert into student values(default, 'Valie', 'Zak', 2002, now());
+insert into student values(default, 'Tonya', 'Zak', 2003, now());
+
+insert into kierunek values(default, 'Music');
+insert into kierunek values(default, 'Sport');
+
+insert into student_na_kierunku values(1, 2);
+insert into student_na_kierunku values(2, 2);
+insert into student_na_kierunku values(3, 1);
+insert into student_na_kierunku values(4, 1);
+
+insert into przedmiot values(default, 'Math', 'bad');
+insert into przedmiot values(default, 'Pe', 'good');
+insert into przedmiot values(default, 'Tech', 'nice');
+insert into przedmiot values(default, 'Singing', 'excellent');
+
+insert into kierunek_has_przedmioty values(1, 1, 0);
+insert into kierunek_has_przedmioty values(1, 2, 1);
+insert into kierunek_has_przedmioty values(2, 3, 1);
+insert into kierunek_has_przedmioty values(2, 4, 1);
+
+alter table przedmiot modify column opis varchar(255) default 'BRAK KOLUMNY';
+
+
+ALTER TABLE student_na_kierunku DROP FOREIGN KEY student_na_kierunku_ibfk_1;
+alter table student modify id_studenta int ;
+alter table student drop primary key;
+alter table student add column indeks int primary key auto_increment first;
+alter table student_na_kierunku add foreign key(student) references student(indeks);
+
+alter table student_na_kierunku add column semestr VARCHAR(20) not null default '2024Z';
+alter table student_na_kierunku add column rok_studiow int unsigned not null ;
+select * from student_na_kierunku;
+update student_na_kierunku set rok_studiow = 4 where student = 4;
+select * from przedmiot;
+select * from student_na_kierunku;
+select s.indeks, s.imie As IMIE, s.nazwisko as NAZWISKO, k.nazwa_kierunku AS KIERUNEK, snk.rok_studiow * 2 AS SEMESTER  , p.nazwa_przedmiotu
+from student s join student_na_kierunku snk on s.indeks = snk.student join kierunek k on snk.kierunek = k.id_kierunku 
+join kierunek_has_przedmioty khs on k.id_kierunku = khs.kierunek join przedmiot p on khs.przedmiot =p.id_przedmiotu;
